@@ -1,0 +1,9 @@
+bin/
+obj/
+artifacts/
+packages/
+node_modules/
+**/wwwroot/lib
+.vs/
+project.lock.json
+*.xproj.user
