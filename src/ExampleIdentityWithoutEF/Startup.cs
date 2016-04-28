@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExampleIdentityWithoutEF.Models;
+using ExampleIdentityWithoutEF.Services;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.Identity;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using ExampleIdentityWithoutEF.Models;
-using ExampleIdentityWithoutEF.Services;
 
 namespace ExampleIdentityWithoutEF
 {
@@ -38,14 +34,14 @@ namespace ExampleIdentityWithoutEF
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddEntityFramework()
-                .AddSqlServer()
-                .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+            var userStore = new ExampleUserStore();
+            var roleStore = new ExampleRoleStore();
+            var userPrincipalFactory = new ExampleUserPrincipalFactory();
+            services.AddInstance<IUserStore<ApplicationUser>>(userStore);
+            services.AddInstance<IRoleStore<ApplicationRole>>(roleStore);
+            services.AddInstance<IUserClaimsPrincipalFactory<ApplicationUser>>(userPrincipalFactory);
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddDefaultTokenProviders();
 
             services.AddMvc();
@@ -70,18 +66,6 @@ namespace ExampleIdentityWithoutEF
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-
-                // For more details on creating database during deployment see http://go.microsoft.com/fwlink/?LinkID=615859
-                try
-                {
-                    using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
-                        .CreateScope())
-                    {
-                        serviceScope.ServiceProvider.GetService<ApplicationDbContext>()
-                             .Database.Migrate();
-                    }
-                }
-                catch { }
             }
 
             app.UseIISPlatformHandler(options => options.AuthenticationDescriptions.Clear());
