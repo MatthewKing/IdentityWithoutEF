@@ -1,12 +1,15 @@
-﻿using IdentityWithoutEF.Models;
-using IdentityWithoutEF.Services;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Identity;
-using Microsoft.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using IdentityWithoutEF.Models;
+using IdentityWithoutEF.Services;
 
 namespace IdentityWithoutEF
 {
@@ -14,35 +17,44 @@ namespace IdentityWithoutEF
     {
         public Startup(IHostingEnvironment env)
         {
-            // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
             if (env.IsDevelopment())
             {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets();
+                // For more details on using the user secret store see https://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets<Startup>();
             }
 
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; set; }
+        public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             var userStore = new ExampleUserStore();
             var roleStore = new ExampleRoleStore();
-            var userPrincipalFactory = new ExampleUserPrincipalFactory();
-            services.AddInstance<IUserStore<ApplicationUser>>(userStore);
-            services.AddInstance<IRoleStore<ApplicationRole>>(roleStore);
-            services.AddInstance<IUserClaimsPrincipalFactory<ApplicationUser>>(userPrincipalFactory);
+            services.AddSingleton<IUserStore<ApplicationUser>>(userStore);
+            services.AddSingleton<IUserPasswordStore<ApplicationUser>>(userStore);
+            services.AddSingleton<IUserEmailStore<ApplicationUser>>(userStore);
+            services.AddSingleton<IRoleStore<ApplicationRole>>(roleStore);
+            services.AddSingleton<IUserClaimsPrincipalFactory<ApplicationUser>, ExampleUserPrincipalFactory>();
 
-            services.AddIdentity<ApplicationUser, ApplicationRole>()
-                .AddDefaultTokenProviders();
+            services.AddAuthentication();
+            services.AddAuthorization();
+            services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+            }).AddDefaultTokenProviders();
 
             services.AddMvc();
 
@@ -59,22 +71,18 @@ namespace IdentityWithoutEF
 
             if (env.IsDevelopment())
             {
-                app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
             }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseIISPlatformHandler(options => options.AuthenticationDescriptions.Clear());
-
             app.UseStaticFiles();
 
             app.UseIdentity();
 
-            // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
+            // Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
 
             app.UseMvc(routes =>
             {
@@ -83,8 +91,5 @@ namespace IdentityWithoutEF
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
-
-        // Entry point for the application.
-        public static void Main(string[] args) => WebApplication.Run<Startup>(args);
     }
 }

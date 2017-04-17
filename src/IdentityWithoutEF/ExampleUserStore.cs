@@ -4,22 +4,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IdentityWithoutEF.Models;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace IdentityWithoutEF
 {
     public class ExampleUserStore : IUserStore<ApplicationUser>,
+                                    IUserEmailStore<ApplicationUser>,
                                     IUserPasswordStore<ApplicationUser>,
                                     IUserLoginStore<ApplicationUser>,
                                     IUserPhoneNumberStore<ApplicationUser>,
                                     IUserTwoFactorStore<ApplicationUser>
     {
-        private readonly List<ApplicationUser> _users;
-        
-        public ExampleUserStore()
-        {
-            _users = new List<ApplicationUser>();
-        }
+        private static readonly List<ApplicationUser> _users = new List<ApplicationUser>();
 
         public Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
@@ -91,6 +87,45 @@ namespace IdentityWithoutEF
         public Task<string> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
             return Task.FromResult(user.UserName);
+        }
+
+        public Task SetEmailAsync(ApplicationUser user, string email, CancellationToken cancellationToken)
+        {
+            user.Email = email;
+            return Task.CompletedTask;
+        }
+
+        public Task<string> GetEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(user.Email);
+        }
+
+        public Task<bool> GetEmailConfirmedAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+
+        public Task SetEmailConfirmedAsync(ApplicationUser user, bool confirmed, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<ApplicationUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
+        {
+            var user = _users.FirstOrDefault(u => u.Email == normalizedEmail);
+
+            return Task.FromResult(user);
+        }
+
+        public Task<string> GetNormalizedEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(user.Email);
+        }
+
+        public Task SetNormalizedEmailAsync(ApplicationUser user, string normalizedEmail, CancellationToken cancellationToken)
+        {
+            user.Email = normalizedEmail;
+            return Task.CompletedTask;
         }
 
         public Task<string> GetPasswordHashAsync(ApplicationUser user, CancellationToken cancellationToken)

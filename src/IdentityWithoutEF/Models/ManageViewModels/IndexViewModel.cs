@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
 
-namespace IdentityWithoutEF.ViewModels.Manage
+namespace IdentityWithoutEF.Models.ManageViewModels
 {
     public class IndexViewModel
     {

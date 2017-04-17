@@ -1,9 +1,9 @@
+.vs/
 bin/
 obj/
 artifacts/
 packages/
 node_modules/
 **/wwwroot/lib
-.vs/
-project.lock.json
-*.xproj.user
+**/wwwroot/js/site.min.js
+**/wwwroot/css/site.min.css
