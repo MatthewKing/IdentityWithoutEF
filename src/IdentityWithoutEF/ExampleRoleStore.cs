@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,7 +63,7 @@ namespace IdentityWithoutEF
 
         public Task<ApplicationRole> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
         {
-            var role = _roles.FirstOrDefault(r => r.RoleName == normalizedRoleName);
+            var role = _roles.FirstOrDefault(r => String.Equals(r.RoleNameNormalized, normalizedRoleName, StringComparison.OrdinalIgnoreCase));
 
             return Task.FromResult(role);
         }
@@ -79,7 +80,7 @@ namespace IdentityWithoutEF
 
         public Task<string> GetNormalizedRoleNameAsync(ApplicationRole role, CancellationToken cancellationToken)
         {
-            return Task.FromResult(role.RoleName);
+            return Task.FromResult(role.RoleNameNormalized);
         }
 
         public Task SetRoleNameAsync(ApplicationRole role, string roleName, CancellationToken cancellationToken)
@@ -91,8 +92,8 @@ namespace IdentityWithoutEF
 
         public Task SetNormalizedRoleNameAsync(ApplicationRole role, string normalizedName, CancellationToken cancellationToken)
         {
-            role.RoleName = normalizedName;
-
+            // Do nothing. In this simple example, the normalized name is generated from the role name.
+            
             return Task.FromResult(true);
         }
 

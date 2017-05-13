@@ -69,7 +69,7 @@ namespace IdentityWithoutEF
 
         public Task<ApplicationUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            var user = _users.FirstOrDefault(u => u.UserName == normalizedUserName);
+            var user = _users.FirstOrDefault(u => String.Equals(u.UserNameNormalized, normalizedUserName, StringComparison.OrdinalIgnoreCase));
 
             return Task.FromResult(user);
         }
@@ -86,12 +86,13 @@ namespace IdentityWithoutEF
 
         public Task<string> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            return Task.FromResult(user.UserName);
+            return Task.FromResult(user.UserNameNormalized);
         }
 
         public Task SetEmailAsync(ApplicationUser user, string email, CancellationToken cancellationToken)
         {
             user.Email = email;
+
             return Task.CompletedTask;
         }
 
@@ -112,19 +113,20 @@ namespace IdentityWithoutEF
 
         public Task<ApplicationUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            var user = _users.FirstOrDefault(u => u.Email == normalizedEmail);
+            var user = _users.FirstOrDefault(u => String.Equals(u.EmailNormalized, normalizedEmail, StringComparison.OrdinalIgnoreCase));
 
             return Task.FromResult(user);
         }
 
         public Task<string> GetNormalizedEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            return Task.FromResult(user.Email);
+            return Task.FromResult(user.EmailNormalized);
         }
 
         public Task SetNormalizedEmailAsync(ApplicationUser user, string normalizedEmail, CancellationToken cancellationToken)
         {
-            user.Email = normalizedEmail;
+            // Do nothing. In this simple example, the normalized email is generated from the email.
+
             return Task.CompletedTask;
         }
 
@@ -141,18 +143,21 @@ namespace IdentityWithoutEF
         public Task SetUserNameAsync(ApplicationUser user, string userName, CancellationToken cancellationToken)
         {
             user.UserName = userName;
+
             return Task.FromResult(true);
         }
 
         public Task SetNormalizedUserNameAsync(ApplicationUser user, string normalizedName, CancellationToken cancellationToken)
         {
-            user.UserName = normalizedName;
+            // Do nothing. In this simple example, the normalized user name is generated from the user name.
+
             return Task.FromResult(true);
         }
 
         public Task SetPasswordHashAsync(ApplicationUser user, string passwordHash, CancellationToken cancellationToken)
         {
             user.PasswordHash = passwordHash;
+
             return Task.FromResult(true);
         }
 
@@ -164,6 +169,7 @@ namespace IdentityWithoutEF
         public Task SetPhoneNumberAsync(ApplicationUser user, string phoneNumber, CancellationToken cancellationToken)
         {
             user.PhoneNumber = phoneNumber;
+
             return Task.FromResult(true);
         }
 
@@ -175,12 +181,14 @@ namespace IdentityWithoutEF
         public Task SetPhoneNumberConfirmedAsync(ApplicationUser user, bool confirmed, CancellationToken cancellationToken)
         {
             user.PhoneNumberConfirmed = confirmed;
+
             return Task.FromResult(true);
         }
 
         public Task SetTwoFactorEnabledAsync(ApplicationUser user, bool enabled, CancellationToken cancellationToken)
         {
             user.TwoFactorEnabled = enabled;
+
             return Task.FromResult(true);
         }
 
